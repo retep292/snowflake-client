@@ -22,3 +22,12 @@ dotnet run --project .\SnowflakeClient\SnowflakeClient.csproj
 ```
 
 Paste a Snowflake connection string, enter a query such as `select current_version();`, then choose **Run**.
+
+## GitHub Release
+
+Pushing a version tag such as `v1.0.0` runs the GitHub Actions workflow and creates a GitHub Release with a zipped Windows x64 build.
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```

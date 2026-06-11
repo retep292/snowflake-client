@@ -1,0 +1,79 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: 10.0.x
+  PROJECT_PATH: SnowflakeClient/SnowflakeClient.csproj
+  SOLUTION_PATH: SnowflakeClient.slnx
+  ARTIFACT_NAME: SnowflakeClient-win-x64
+
+jobs:
+  build:
+    name: Build Windows app
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore $env:SOLUTION_PATH
+
+      - name: Build
+        run: dotnet build $env:SOLUTION_PATH --configuration Release --no-restore -p:Platform=x64
+
+      - name: Publish
+        run: >
+          dotnet publish $env:PROJECT_PATH
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output "$env:RUNNER_TEMP\publish"
+          -p:Platform=x64
+          -p:WindowsAppSDKSelfContained=true
+
+      - name: Copy documentation
+        run: |
+          Copy-Item .\README.md "$env:RUNNER_TEMP\publish\README.md"
+          Copy-Item .\LICENSE "$env:RUNNER_TEMP\publish\LICENSE"
+
+      - name: Create ZIP
+        id: package
+        run: |
+          $zipPath = "$env:RUNNER_TEMP\$env:ARTIFACT_NAME.zip"
+          Compress-Archive -Path "$env:RUNNER_TEMP\publish\*" -DestinationPath $zipPath -Force
+          "zip_path=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ steps.package.outputs.zip_path }}
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" "${{ steps.package.outputs.zip_path }}" `
+            --repo "${{ github.repository }}" `
+            --title "Snowflake Client ${{ github.ref_name }}" `
+            --notes "Windows x64 self-contained build of Snowflake Client."
