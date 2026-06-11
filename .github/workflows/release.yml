@@ -48,24 +48,25 @@ jobs:
           --output "$env:RUNNER_TEMP\publish"
           -p:Platform=x64
           -p:WindowsAppSDKSelfContained=true
+          -p:PublishSingleFile=true
+          -p:EnableMsixTooling=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
 
-      - name: Copy documentation
-        run: |
-          Copy-Item .\README.md "$env:RUNNER_TEMP\publish\README.md"
-          Copy-Item .\LICENSE "$env:RUNNER_TEMP\publish\LICENSE"
-
-      - name: Create ZIP
+      - name: Locate executable
         id: package
         run: |
-          $zipPath = "$env:RUNNER_TEMP\$env:ARTIFACT_NAME.zip"
-          Compress-Archive -Path "$env:RUNNER_TEMP\publish\*" -DestinationPath $zipPath -Force
-          "zip_path=$zipPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          $exePath = "$env:RUNNER_TEMP\publish\SnowflakeClient.exe"
+          if (-not (Test-Path $exePath)) {
+            throw "Published executable was not found at $exePath"
+          }
+          "exe_path=$exePath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ steps.package.outputs.zip_path }}
+          path: ${{ steps.package.outputs.exe_path }}
           if-no-files-found: error
 
       - name: Create GitHub release
@@ -73,7 +74,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ github.ref_name }}" "${{ steps.package.outputs.zip_path }}" `
+          gh release create "${{ github.ref_name }}" "${{ steps.package.outputs.exe_path }}" `
             --repo "${{ github.repository }}" `
             --title "Snowflake Client ${{ github.ref_name }}" `
-            --notes "Windows x64 self-contained build of Snowflake Client."
+            --notes "Windows x64 self-contained single-file build of Snowflake Client."
