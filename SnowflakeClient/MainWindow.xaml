@@ -1,0 +1,84 @@
+<Window
+    x:Class="SnowflakeClient.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Snowflake Client">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <CommandBar
+            Grid.Row="0"
+            DefaultLabelPosition="Right"
+            IsOpen="False">
+            <AppBarButton
+                x:Name="RunButton"
+                Click="RunButton_Click"
+                Icon="Play"
+                Label="Run" />
+            <AppBarButton
+                x:Name="CancelButton"
+                Click="CancelButton_Click"
+                Icon="Cancel"
+                IsEnabled="False"
+                Label="Cancel" />
+        </CommandBar>
+
+        <Grid Grid.Row="1" Padding="24" RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="3*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Spacing="8">
+                <TextBlock
+                    FontSize="20"
+                    FontWeight="SemiBold"
+                    Text="Snowflake connectivity test" />
+                <TextBox
+                    x:Name="ConnectionStringTextBox"
+                    AcceptsReturn="True"
+                    Header="Connection string"
+                    MaxHeight="120"
+                    PlaceholderText="account=...;user=...;password=...;db=...;schema=...;warehouse=...;role=..."
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <TextBox
+                x:Name="QueryTextBox"
+                Grid.Row="1"
+                AcceptsReturn="True"
+                FontFamily="Consolas"
+                Header="Query"
+                PlaceholderText="select current_version();"
+                Text="select current_version();"
+                TextWrapping="NoWrap" />
+
+            <TextBox
+                x:Name="ResultsTextBox"
+                Grid.Row="2"
+                AcceptsReturn="True"
+                FontFamily="Consolas"
+                Header="Results"
+                IsReadOnly="True"
+                PlaceholderText="Query results will appear here."
+                TextWrapping="NoWrap" />
+        </Grid>
+
+        <InfoBar
+            x:Name="StatusInfoBar"
+            Grid.Row="2"
+            Margin="24,0,24,24"
+            IsOpen="True"
+            Message="Ready"
+            Severity="Informational" />
+    </Grid>
+</Window>
