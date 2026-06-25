@@ -15,6 +15,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
-    <PackageReference Include="Snowflake.Data" Version="5.6.0" />
+    <PackageReference Include="Snowflake.Data" Version="5.7.0" />
   </ItemGroup>
 </Project>
